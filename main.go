@@ -1,67 +1,59 @@
 package main
 
 import (
-	"bufio"
-	"flag"
+	"fmt"
 	"log"
-	"net"
-	"net/http"
-	"regexp"
+	"os"
+	"os/signal"
+	"runtime/debug"
+	"syscall"
 
-	"github.com/elazarl/goproxy"
-	"github.com/elazarl/goproxy/ext/auth"
+	"github.com/moooofly/goproxy/services"
 )
 
-func orPanic(err error) {
-	if err != nil {
-		panic(err)
-	}
-}
+var APP_VERSION = "No Version Provided"
 
 func main() {
-	proxy := goproxy.NewProxyHttpServer()
-	/*
-		proxy.OnRequest(goproxy.ReqHostMatches(regexp.MustCompile("^.*baidu.com$"))).
-			HandleConnect(goproxy.AlwaysReject)
-	*/
-	proxy.OnRequest(goproxy.ReqHostMatches(regexp.MustCompile("^.*$"))).
-		HandleConnect(goproxy.AlwaysMitm)
-	// enable curl -p for all hosts on port 80
-	proxy.OnRequest(goproxy.ReqHostMatches(regexp.MustCompile("^.*:80$"))).
-		HijackConnect(func(req *http.Request, client net.Conn, ctx *goproxy.ProxyCtx) {
-			defer func() {
-				if e := recover(); e != nil {
-					ctx.Logf("error connecting to remote: %v", e)
-					client.Write([]byte("HTTP/1.1 500 Cannot reach destination\r\n\r\n"))
-				}
-				client.Close()
-			}()
-			clientBuf := bufio.NewReadWriter(bufio.NewReader(client), bufio.NewWriter(client))
-			remote, err := net.Dial("tcp", req.URL.Host)
-			orPanic(err)
-			remoteBuf := bufio.NewReadWriter(bufio.NewReader(remote), bufio.NewWriter(remote))
-			for {
-				req, err := http.ReadRequest(clientBuf.Reader)
-				orPanic(err)
-				orPanic(req.Write(remoteBuf))
-				orPanic(remoteBuf.Flush())
-				resp, err := http.ReadResponse(remoteBuf.Reader, req)
-				orPanic(err)
-				orPanic(resp.Write(clientBuf.Writer))
-				orPanic(clientBuf.Flush())
-			}
-		})
-	verbose := flag.Bool("v", false, "should every proxy request be logged to stdout")
-	addr := flag.String("addr", ":8080", "proxy listen address")
-	flag.Parse()
-	proxy.Verbose = *verbose
-
-	// FIXME(moooofly): add this for test only
-	username, password := "foo", "bar"
-	f := func(user, pwd string) bool {
-		return user == username && password == pwd
+	err := initConfig()
+	if err != nil {
+		log.Fatalf("err : %s", err)
 	}
-	proxy.OnRequest().HandleConnect(auth.BasicConnect("my_realm", f))
-
-	log.Fatal(http.ListenAndServe(*addr, proxy))
+	if service != nil && service.S != nil {
+		Clean(&service.S)
+	} else {
+		Clean(nil)
+	}
+}
+func Clean(s *services.Service) {
+	signalChan := make(chan os.Signal, 1)
+	cleanupDone := make(chan bool)
+	signal.Notify(signalChan,
+		os.Interrupt,
+		syscall.SIGHUP,
+		syscall.SIGINT,
+		syscall.SIGTERM,
+		syscall.SIGQUIT)
+	go func() {
+		defer func() {
+			if e := recover(); e != nil {
+				fmt.Printf("crashed, err: %s\nstack:\n%s", e, string(debug.Stack()))
+			}
+		}()
+		for range signalChan {
+			log.Println("Received an interrupt, stopping services...")
+			if s != nil && *s != nil {
+				(*s).Clean()
+			}
+			if cmd != nil {
+				log.Printf("clean process %d", cmd.Process.Pid)
+				cmd.Process.Kill()
+			}
+			if *isDebug {
+				saveProfiling()
+			}
+			cleanupDone <- true
+		}
+	}()
+	<-cleanupDone
+	os.Exit(0)
 }
