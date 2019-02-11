@@ -1,5 +1,5 @@
+goproxy
 *.prof
-http-tunnel
 
 # Created by https://www.gitignore.io/api/go
 # Edit at https://www.gitignore.io/?templates=go
@@ -19,7 +19,7 @@ http-tunnel
 *.out
 
 ### Go Patch ###
-/vendor/
-/Godeps/
+#/vendor/
+#/Godeps/
 
 # End of https://www.gitignore.io/api/go
