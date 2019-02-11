@@ -11,9 +11,9 @@ import (
 	"runtime/pprof"
 	"time"
 
-	"github.com/moooofly/http-tunnel/services"
-	"github.com/moooofly/http-tunnel/services/basic"
-	"github.com/moooofly/http-tunnel/services/eavesdropper"
+	"github.com/moooofly/goproxy/services"
+	"github.com/moooofly/goproxy/services/basic"
+	"github.com/moooofly/goproxy/services/eavesdropper"
 
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 )

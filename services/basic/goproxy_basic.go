@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/elazarl/goproxy"
-	"github.com/moooofly/http-tunnel/services"
+	"github.com/moooofly/goproxy/services"
 )
 
 type BasicArgs struct {

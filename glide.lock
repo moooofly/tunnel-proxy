@@ -1,0 +1,14 @@
+hash: 13d9e8d952cd957b5edf0bf4447c97fefb4d7f9b68a90fd692e336a40bc7de89
+updated: 2019-02-11T18:36:11.052395827+08:00
+imports:
+- name: github.com/alecthomas/template
+  version: a0175ee3bccc567396460bf5acd36800cb10c49c
+  subpackages:
+  - parse
+- name: github.com/alecthomas/units
+  version: 2efee857e7cfd4f3d0138cc3cbb1b4966962b93a
+- name: github.com/elazarl/goproxy
+  version: 947c36da3153ff334e74d9d980de341d25f358ba
+- name: gopkg.in/alecthomas/kingpin.v2
+  version: 947dcec5ba9c011838740e680966fd7087a71d0d
+testImports: []
