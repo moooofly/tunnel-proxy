@@ -3,6 +3,7 @@ package basic
 import (
 	logger "log"
 	"net/http"
+	"regexp"
 	"strings"
 
 	"github.com/elazarl/goproxy"
@@ -10,10 +11,11 @@ import (
 	"github.com/moooofly/goproxy/services"
 )
 
-const realm = "LLSRealm"
+const realm = "LLS-Realm"
 
 type BasicArgs struct {
 	Local *string
+	White *string
 }
 
 type Basic struct {
@@ -51,11 +53,21 @@ func (s *Basic) Start(args interface{}, log *logger.Logger) (err error) {
 	for _, addr := range strings.Split(*s.cfg.Local, ",") {
 		if addr != "" {
 			proxy := goproxy.NewProxyHttpServer()
-			// FIXME(mooofly): hardcode here for easy use
+			// FIXME(mooofly): hardcode here right now
 			proxy.Verbose = true
 			proxy.Logger = s.log
+
 			proxy.OnRequest().Do(auth.Basic(realm, verify))
 			proxy.OnRequest().HandleConnect(auth.BasicConnect(realm, verify))
+
+			// white list
+			// FIXME(mooofly): hardcode here right now
+			proxy.OnRequest(
+				goproxy.Not(goproxy.ReqHostMatches(regexp.MustCompile("^.*llsapp.com.*$"))),
+				goproxy.Not(goproxy.ReqHostMatches(regexp.MustCompile("^.*liulishuo.com.*$"))),
+				goproxy.Not(goproxy.ReqHostMatches(regexp.MustCompile("^.*llscdn.com.*$"))),
+			).HandleConnect(goproxy.AlwaysReject)
+
 			err = http.ListenAndServe(addr, proxy)
 			if err != nil {
 				return

@@ -42,6 +42,7 @@ func initConfig() (err error) {
 	// ######### basic ##########
 	basicCmd := app.Command("basic", "basic proxy")
 	basicArgs.Local = basicCmd.Flag("local", "local ip:port to listen, multiple address use comma split, such as: 0.0.0.0:80,0.0.0.0:443").Short('p').Default(":8080").String()
+	basicArgs.White = basicCmd.Flag("white", "white list file , one domain each line").Default("white").Short('w').String()
 
 	// ######### eavesdropper ##########
 	eavesdropperCmd := app.Command("eavesdropper", "eavesdropper proxy")
