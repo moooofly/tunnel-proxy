@@ -31,11 +31,11 @@ func initConfig() (err error) {
 	basicArgs := basic.BasicArgs{}
 	eavesdropperArgs := eavesdropper.EavesdropperArgs{}
 
-	app = kingpin.New("proxy", "This is a HTTP tunnel proxy.")
+	app = kingpin.New("proxy", "This is a HTTP Tunnel Proxy.")
 	app.Author("moooofly").Version(APP_VERSION)
 	isDebug = app.Flag("debug", "debug log output").Default("false").Bool()
 	daemon := app.Flag("daemon", "run proxy in background").Default("false").Bool()
-	forever := app.Flag("forever", "run proxy in forever,fail and retry").Default("false").Bool()
+	forever := app.Flag("forever", "run proxy in forever, fail and retry").Default("false").Bool()
 	logfile := app.Flag("log", "log file path").Default("").String()
 	nolog := app.Flag("nolog", "turn off logging").Default("false").Bool()
 
@@ -165,7 +165,6 @@ func initConfig() (err error) {
 		}
 	}
 
-	//regist services and run service
 	switch serviceName {
 	case "basic":
 		services.Regist(serviceName, basic.NewBasic(), basicArgs, log)
