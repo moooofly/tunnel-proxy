@@ -6,8 +6,11 @@ import (
 	"strings"
 
 	"github.com/elazarl/goproxy"
+	"github.com/elazarl/goproxy/ext/auth"
 	"github.com/moooofly/goproxy/services"
 )
+
+const realm = "LLSRealm"
 
 type BasicArgs struct {
 	Local *string
@@ -48,8 +51,15 @@ func (s *Basic) Start(args interface{}, log *logger.Logger) (err error) {
 	for _, addr := range strings.Split(*s.cfg.Local, ",") {
 		if addr != "" {
 			proxy := goproxy.NewProxyHttpServer()
-			//proxy.Verbose = *verbose
+			// FIXME(mooofly): hardcode here for easy use
+			proxy.Verbose = true
+			proxy.Logger = s.log
+			proxy.OnRequest().Do(auth.Basic(realm, verify))
+			proxy.OnRequest().HandleConnect(auth.BasicConnect(realm, verify))
 			err = http.ListenAndServe(addr, proxy)
+			if err != nil {
+				return
+			}
 		}
 	}
 	return
@@ -57,4 +67,9 @@ func (s *Basic) Start(args interface{}, log *logger.Logger) (err error) {
 
 func (s *Basic) Clean() {
 	s.StopService()
+}
+
+// FIXME(moooofly): should be more general
+func verify(user, passwd string) bool {
+	return user == "foo" && passwd == "bar"
 }
