@@ -1,6 +1,7 @@
 package basic
 
 import (
+	"fmt"
 	logger "log"
 	"net/http"
 	"regexp"
@@ -9,6 +10,7 @@ import (
 	"github.com/elazarl/goproxy"
 	"github.com/elazarl/goproxy/ext/auth"
 	"github.com/moooofly/goproxy/services"
+	"github.com/moooofly/goproxy/utils"
 )
 
 const realm = "LLS-Realm"
@@ -50,23 +52,30 @@ func (s *Basic) Start(args interface{}, log *logger.Logger) (err error) {
 	s.log = log
 	s.cfg = args.(BasicArgs)
 
+	wl, err := utils.LoadWhiteList(*s.cfg.White)
+	if err != nil {
+		return err
+	}
+
+	var conds []goproxy.ReqCondition
+	for _, v := range wl {
+		conds = append(conds, goproxy.Not(goproxy.ReqHostMatches(regexp.MustCompile(fmt.Sprintf("^.*%s.*$", v)))))
+	}
+
 	for _, addr := range strings.Split(*s.cfg.Local, ",") {
 		if addr != "" {
 			proxy := goproxy.NewProxyHttpServer()
+
 			// FIXME(mooofly): hardcode here right now
 			proxy.Verbose = true
 			proxy.Logger = s.log
 
+			// white list
+			proxy.OnRequest(conds...).HandleConnect(goproxy.AlwaysReject)
+
+			// basic auth
 			proxy.OnRequest().Do(auth.Basic(realm, verify))
 			proxy.OnRequest().HandleConnect(auth.BasicConnect(realm, verify))
-
-			// white list
-			// FIXME(mooofly): hardcode here right now
-			proxy.OnRequest(
-				goproxy.Not(goproxy.ReqHostMatches(regexp.MustCompile("^.*llsapp.com.*$"))),
-				goproxy.Not(goproxy.ReqHostMatches(regexp.MustCompile("^.*liulishuo.com.*$"))),
-				goproxy.Not(goproxy.ReqHostMatches(regexp.MustCompile("^.*llscdn.com.*$"))),
-			).HandleConnect(goproxy.AlwaysReject)
 
 			err = http.ListenAndServe(addr, proxy)
 			if err != nil {
