@@ -1,3 +1,16 @@
+<a name="0.2.0"></a>
+# [0.2.0](https://github.com/moooofly/goproxy/compare/v0.1.0...v0.2.0) (2019-02-13)
+
+
+### Features
+
+* add Basic Authentication ([9886b88](https://github.com/moooofly/goproxy/commit/9886b88))
+* add white-list support ([2fa4d6d](https://github.com/moooofly/goproxy/commit/2fa4d6d))
+* basic auth configuration support from both file and CLI ([df58097](https://github.com/moooofly/goproxy/commit/df58097))
+* support white-list by hardcore ([b8b8b16](https://github.com/moooofly/goproxy/commit/b8b8b16))
+
+
+
 <a name="0.1.0"></a>
 # 0.1.0 (2019-02-11)
 
