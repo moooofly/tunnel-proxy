@@ -31,17 +31,21 @@ func initConfig() (err error) {
 	basicArgs := basic.BasicArgs{}
 	eavesdropperArgs := eavesdropper.EavesdropperArgs{}
 
-	app = kingpin.New("proxy", "This is a HTTP tunnel proxy.")
+	app = kingpin.New("proxy", "This is a HTTP Tunnel Proxy.")
 	app.Author("moooofly").Version(APP_VERSION)
 	isDebug = app.Flag("debug", "debug log output").Default("false").Bool()
 	daemon := app.Flag("daemon", "run proxy in background").Default("false").Bool()
-	forever := app.Flag("forever", "run proxy in forever,fail and retry").Default("false").Bool()
+	forever := app.Flag("forever", "run proxy in forever, fail and retry").Default("false").Bool()
 	logfile := app.Flag("log", "log file path").Default("").String()
 	nolog := app.Flag("nolog", "turn off logging").Default("false").Bool()
 
 	// ######### basic ##########
 	basicCmd := app.Command("basic", "basic proxy")
-	basicArgs.Local = basicCmd.Flag("local", "local ip:port to listen, multiple address use comma split, such as: 0.0.0.0:80,0.0.0.0:443").Short('p').Default(":8080").String()
+	basicArgs.Local = basicCmd.Flag("local", "Address to listen, multiple addresses separating by comma, e.g. \"0.0.0.0:80,0.0.0.0:443\"").Short('l').Default(":8080").String()
+	basicArgs.White = basicCmd.Flag("white", "white-list file, please set one domain each line").Default("whitelist.cfg").Short('w').String()
+	//basicArgs.AuthFile = basicCmd.Flag("auth-file", "HTTP basic auth file, please set one \"username:password\" each line").Default("auth.cfg").Short('A').String()
+	basicArgs.AuthFile = basicCmd.Flag("auth-file", "HTTP basic auth file, please set one \"username:password\" each line").Short('A').String()
+	basicArgs.Auth = basicCmd.Flag("auth-args", "HTTP basic auth arguments, can set mutiple times, e.g. \"-a user1:pass1 -a user2:pass2\"").Short('a').Strings()
 
 	// ######### eavesdropper ##########
 	eavesdropperCmd := app.Command("eavesdropper", "eavesdropper proxy")
@@ -165,7 +169,6 @@ func initConfig() (err error) {
 		}
 	}
 
-	//regist services and run service
 	switch serviceName {
 	case "basic":
 		services.Regist(serviceName, basic.NewBasic(), basicArgs, log)
