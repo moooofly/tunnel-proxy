@@ -12,9 +12,13 @@ import (
 	"github.com/moooofly/goproxy/services"
 	"github.com/moooofly/goproxy/utils"
 	"github.com/moooofly/goproxy/utils/authx"
+	"github.com/moooofly/goproxy/utils/cipher"
 )
 
-const realm = "LLS-Realm"
+var key []byte = cipher.Base64Decode("a1vmCcIkAfAiu9u37YZ+SHX/JtRi4EP1yjRx6nZv0HY=")
+var iv []byte = cipher.Base64Decode("P78Sw02O5m81WCbvEGRGjw==")
+
+const realm = "Basic-Realm"
 
 type BasicArgs struct {
 	Local    *string
@@ -86,6 +90,9 @@ func (s *Basic) Start(args interface{}, log *logger.Logger) (err error) {
 			// white list
 			proxy.OnRequest(conds...).HandleConnect(goproxy.AlwaysReject)
 
+			// header analysis
+			proxy.OnRequest().HandleConnect(s.HeaderAnalysis())
+
 			// basic auth
 			proxy.OnRequest().Do(auth.Basic(realm, s.Verify))
 			proxy.OnRequest().HandleConnect(auth.BasicConnect(realm, s.Verify))
@@ -97,6 +104,31 @@ func (s *Basic) Start(args interface{}, log *logger.Logger) (err error) {
 		}
 	}
 	return
+}
+
+// TODO: Log into file for later analysis
+func (s *Basic) HeaderAnalysis() goproxy.HttpsHandler {
+	return goproxy.FuncHttpsHandler(func(host string, ctx *goproxy.ProxyCtx) (*goproxy.ConnectAction, string) {
+		ua := ctx.Req.Header.Get("User-Agent")
+		s.log.Printf("User-Agent: %s\n", ua)
+
+		// The format of User-Info is base64(Aes256(userId+login))
+		ui := ctx.Req.Header.Get("User-Info")
+		s.log.Printf("User-Info: %s\n", ui)
+
+		if ui == "" {
+			s.log.Println("Find no 'User-Info' header, Reject!")
+			return goproxy.RejectConnect, host
+		}
+
+		IDs, err := cipher.AES_CBC_PKCS7_decode(cipher.Base64Decode(ui), key, iv)
+		if err != nil {
+			return goproxy.RejectConnect, host
+		}
+		s.log.Printf("IDs: %s\n", string(IDs))
+
+		return nil, host
+	})
 }
 
 func (s *Basic) Clean() {
@@ -123,6 +155,6 @@ func (s *Basic) InitBasicAuth() (err error) {
 }
 
 func (s *Basic) Verify(user, passwd string) bool {
+	s.log.Printf("user:%s  pass:%s\n", user, passwd)
 	return s.basicAuth.Check(user, passwd)
-
 }
