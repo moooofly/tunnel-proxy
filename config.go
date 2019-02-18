@@ -43,13 +43,15 @@ func initConfig() (err error) {
 	basicCmd := app.Command("basic", "basic proxy")
 	basicArgs.Local = basicCmd.Flag("local", "Address to listen, multiple addresses separating by comma, e.g. \"0.0.0.0:80,0.0.0.0:443\"").Short('l').Default(":8080").String()
 	basicArgs.White = basicCmd.Flag("white", "white-list file, please set one domain each line").Default("whitelist.cfg").Short('w').String()
-	//basicArgs.AuthFile = basicCmd.Flag("auth-file", "HTTP basic auth file, please set one \"username:password\" each line").Default("auth.cfg").Short('A').String()
 	basicArgs.AuthFile = basicCmd.Flag("auth-file", "HTTP basic auth file, please set one \"username:password\" each line").Short('A').String()
 	basicArgs.Auth = basicCmd.Flag("auth-args", "HTTP basic auth arguments, can set mutiple times, e.g. \"-a user1:pass1 -a user2:pass2\"").Short('a').Strings()
 
 	// ######### eavesdropper ##########
 	eavesdropperCmd := app.Command("eavesdropper", "eavesdropper proxy")
 	eavesdropperArgs.Local = eavesdropperCmd.Flag("local", "local ip:port to listen, multiple address use comma split, such as: 0.0.0.0:80,0.0.0.0:443").Short('p').Default(":8080").String()
+	eavesdropperArgs.White = eavesdropperCmd.Flag("white", "white-list file, please set one domain each line").Default("whitelist.cfg").Short('w').String()
+	eavesdropperArgs.AuthFile = eavesdropperCmd.Flag("auth-file", "HTTP basic auth file, please set one \"username:password\" each line").Short('A').String()
+	eavesdropperArgs.Auth = eavesdropperCmd.Flag("auth-args", "HTTP basic auth arguments, can set mutiple times, e.g. \"-a user1:pass1 -a user2:pass2\"").Short('a').Strings()
 
 	serviceName := kingpin.MustParse(app.Parse(os.Args[1:]))
 
