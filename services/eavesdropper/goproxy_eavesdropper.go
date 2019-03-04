@@ -3,7 +3,6 @@ package eavesdropper
 import (
 	"bufio"
 	"fmt"
-	logger "log"
 	"net"
 	"net/http"
 	"regexp"
@@ -13,6 +12,7 @@ import (
 	"github.com/moooofly/goproxy/services"
 	"github.com/moooofly/goproxy/utils"
 	"github.com/moooofly/goproxy/utils/authx"
+	"github.com/sirupsen/logrus"
 )
 
 const realm = "EavesDropper-Realm"
@@ -27,7 +27,7 @@ type EavesdropperArgs struct {
 type Eavesdropper struct {
 	cfg       EavesdropperArgs
 	basicAuth authx.BasicAuth
-	log       *logger.Logger
+	log       *logrus.Logger
 	isStop    bool
 }
 
@@ -55,7 +55,7 @@ func (s *Eavesdropper) StopService() {
 	s.isStop = true
 }
 
-func (s *Eavesdropper) Start(args interface{}, log *logger.Logger) (err error) {
+func (s *Eavesdropper) Start(args interface{}, log *logrus.Logger) (err error) {
 	s.log = log
 	s.cfg = args.(EavesdropperArgs)
 

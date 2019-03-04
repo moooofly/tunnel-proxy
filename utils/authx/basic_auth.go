@@ -2,18 +2,18 @@ package authx
 
 import (
 	"io/ioutil"
-	logger "log"
 	"strings"
 
 	"github.com/moooofly/goproxy/utils/mapx"
+	"github.com/sirupsen/logrus"
 )
 
 type BasicAuth struct {
 	data mapx.ConcurrentMap
-	log  *logger.Logger
+	log  *logrus.Logger
 }
 
-func NewBasicAuth(log *logger.Logger) BasicAuth {
+func NewBasicAuth(log *logrus.Logger) BasicAuth {
 	return BasicAuth{
 		data: mapx.NewConcurrentMap(),
 		log:  log,

@@ -2,7 +2,6 @@ package basic
 
 import (
 	"fmt"
-	logger "log"
 	"net/http"
 	"regexp"
 	"strings"
@@ -13,6 +12,7 @@ import (
 	"github.com/moooofly/goproxy/utils"
 	"github.com/moooofly/goproxy/utils/authx"
 	"github.com/moooofly/goproxy/utils/cipher"
+	"github.com/sirupsen/logrus"
 )
 
 var key []byte = cipher.Base64Decode("a1vmCcIkAfAiu9u37YZ+SHX/JtRi4EP1yjRx6nZv0HY=")
@@ -30,7 +30,7 @@ type BasicArgs struct {
 type Basic struct {
 	cfg       BasicArgs
 	basicAuth authx.BasicAuth
-	log       *logger.Logger
+	log       *logrus.Logger
 	isStop    bool
 }
 
@@ -58,7 +58,7 @@ func (s *Basic) StopService() {
 	s.isStop = true
 }
 
-func (s *Basic) Start(args interface{}, log *logger.Logger) (err error) {
+func (s *Basic) Start(args interface{}, log *logrus.Logger) (err error) {
 	s.log = log
 	s.cfg = args.(BasicArgs)
 
@@ -117,8 +117,10 @@ func (s *Basic) HeaderAnalysis() goproxy.HttpsHandler {
 		s.log.Printf("User-Info: %s\n", ui)
 
 		if ui == "" {
-			s.log.Println("Find no 'User-Info' header, Reject!")
-			return goproxy.RejectConnect, host
+			//s.log.Println("Find no 'User-Info' header, Reject!")
+			//return goproxy.RejectConnect, host
+			s.log.Println("Find no 'User-Info' header, do nothing in this version!")
+			return nil, host
 		}
 
 		IDs, err := cipher.AES_CBC_PKCS7_decode(cipher.Base64Decode(ui), key, iv)

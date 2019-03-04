@@ -2,25 +2,26 @@ package services
 
 import (
 	"fmt"
-	logger "log"
 	"runtime/debug"
 	"sync"
+
+	"github.com/sirupsen/logrus"
 )
 
 type Service interface {
-	Start(args interface{}, log *logger.Logger) (err error)
+	Start(args interface{}, log *logrus.Logger) (err error)
 	Clean()
 }
 type ServiceItem struct {
 	S    Service
 	Args interface{}
 	Name string
-	Log  *logger.Logger
+	Log  *logrus.Logger
 }
 
 var servicesMap = sync.Map{}
 
-func Regist(name string, s Service, args interface{}, log *logger.Logger) {
+func Regist(name string, s Service, args interface{}, log *logrus.Logger) {
 	Stop(name)
 	servicesMap.Store(name, &ServiceItem{
 		S:    s,
