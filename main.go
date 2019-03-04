@@ -8,7 +8,7 @@ import (
 	"runtime/debug"
 	"syscall"
 
-	"github.com/moooofly/goproxy/services"
+	"github.com/moooofly/tunnel-proxy/services"
 )
 
 var APP_VERSION = "No Version Provided"

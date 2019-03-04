@@ -6,12 +6,12 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/elazarl/goproxy"
-	"github.com/elazarl/goproxy/ext/auth"
-	"github.com/moooofly/goproxy/services"
-	"github.com/moooofly/goproxy/utils"
-	"github.com/moooofly/goproxy/utils/authx"
-	"github.com/moooofly/goproxy/utils/cipher"
+	"github.com/moooofly/goproxy"
+	"github.com/moooofly/goproxy/ext/auth"
+	"github.com/moooofly/tunnel-proxy/services"
+	"github.com/moooofly/tunnel-proxy/utils"
+	"github.com/moooofly/tunnel-proxy/utils/authx"
+	"github.com/moooofly/tunnel-proxy/utils/cipher"
 	"github.com/sirupsen/logrus"
 )
 

@@ -4,7 +4,7 @@ import (
 	"io/ioutil"
 	"strings"
 
-	"github.com/moooofly/goproxy/utils/mapx"
+	"github.com/moooofly/tunnel-proxy/utils/mapx"
 	"github.com/sirupsen/logrus"
 )
 

@@ -10,9 +10,9 @@ import (
 	"runtime/pprof"
 	"time"
 
-	"github.com/moooofly/goproxy/services"
-	"github.com/moooofly/goproxy/services/basic"
-	"github.com/moooofly/goproxy/services/eavesdropper"
+	"github.com/moooofly/tunnel-proxy/services"
+	"github.com/moooofly/tunnel-proxy/services/basic"
+	"github.com/moooofly/tunnel-proxy/services/eavesdropper"
 	"github.com/sirupsen/logrus"
 
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
