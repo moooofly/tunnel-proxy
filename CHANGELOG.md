@@ -1,3 +1,14 @@
+<a name="0.4.0"></a>
+# [0.4.0](https://github.com/moooofly/tunnel-proxy/compare/v0.3.0...v0.4.0) (2019-03-04)
+
+
+### Features
+
+* change log to sirupsen/logrus ([1d1c10c](https://github.com/moooofly/tunnel-proxy/commit/1d1c10c))
+* update project reference name ([3f6b5f3](https://github.com/moooofly/tunnel-proxy/commit/3f6b5f3))
+
+
+
 <a name="0.3.0"></a>
 # [0.3.0](https://github.com/moooofly/goproxy/compare/v0.2.0...v0.3.0) (2019-02-18)
 
