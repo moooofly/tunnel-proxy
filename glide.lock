@@ -1,5 +1,5 @@
-hash: 13d9e8d952cd957b5edf0bf4447c97fefb4d7f9b68a90fd692e336a40bc7de89
-updated: 2019-02-11T18:36:11.052395827+08:00
+hash: 7c660cb28f010672e01e9912b146ef42b9d3bc45c96ab8c217e6313cac2f9b08
+updated: 2019-03-04T15:42:59.637312762+08:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -7,8 +7,23 @@ imports:
   - parse
 - name: github.com/alecthomas/units
   version: 2efee857e7cfd4f3d0138cc3cbb1b4966962b93a
-- name: github.com/elazarl/goproxy
-  version: 947c36da3153ff334e74d9d980de341d25f358ba
+- name: github.com/konsorten/go-windows-terminal-sequences
+  version: f55edac94c9bbba5d6182a4be46d86a2c9b5b50e
+- name: github.com/moooofly/goproxy
+  version: 133cc606bf3c4720971a607f28a51630440ba7d8
+  subpackages:
+  - ext/auth
+- name: github.com/sirupsen/logrus
+  version: e1e72e9de974bd926e5c56f83753fba2df402ce5
+- name: golang.org/x/crypto
+  version: 614d502a4dac94afa3a6ce146bd1736da82514c6
+  subpackages:
+  - ssh/terminal
+- name: golang.org/x/sys
+  version: 1c9583448a9c3aa0f9a6a5241bf73c0bd8aafded
+  subpackages:
+  - unix
+  - windows
 - name: gopkg.in/alecthomas/kingpin.v2
   version: 947dcec5ba9c011838740e680966fd7087a71d0d
 testImports: []

@@ -1,4 +1,4 @@
-goproxy
+tunnel-proxy
 *.prof
 
 # Created by https://www.gitignore.io/api/go

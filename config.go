@@ -4,16 +4,16 @@ import (
 	"bufio"
 	"fmt"
 	"io/ioutil"
-	logger "log"
 	"os"
 	"os/exec"
 	"runtime/debug"
 	"runtime/pprof"
 	"time"
 
-	"github.com/moooofly/goproxy/services"
-	"github.com/moooofly/goproxy/services/basic"
-	"github.com/moooofly/goproxy/services/eavesdropper"
+	"github.com/moooofly/tunnel-proxy/services"
+	"github.com/moooofly/tunnel-proxy/services/basic"
+	"github.com/moooofly/tunnel-proxy/services/eavesdropper"
+	"github.com/sirupsen/logrus"
 
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 )
@@ -28,6 +28,17 @@ var (
 )
 
 func initConfig() (err error) {
+
+	logrus.SetFormatter(&logrus.JSONFormatter{
+		FieldMap: logrus.FieldMap{
+			logrus.FieldKeyTime:  "_timestamp",
+			logrus.FieldKeyLevel: "_level",
+			logrus.FieldKeyMsg:   "message",
+		},
+	})
+	logrus.SetOutput(os.Stdout)
+	logrus.SetLevel(logrus.InfoLevel)
+
 	basicArgs := basic.BasicArgs{}
 	eavesdropperArgs := eavesdropper.EavesdropperArgs{}
 
@@ -55,29 +66,23 @@ func initConfig() (err error) {
 
 	serviceName := kingpin.MustParse(app.Parse(os.Args[1:]))
 
-	log := logger.New(os.Stderr, "", logger.Ldate|logger.Ltime)
-
-	flags := logger.Ldate
 	if *isDebug {
-		flags |= logger.Lshortfile | logger.Lmicroseconds
 		cpuProfilingFile, _ = os.Create("cpu.prof")
 		memProfilingFile, _ = os.Create("memory.prof")
 		blockProfilingFile, _ = os.Create("block.prof")
 		goroutineProfilingFile, _ = os.Create("goroutine.prof")
 		threadcreateProfilingFile, _ = os.Create("threadcreate.prof")
 		pprof.StartCPUProfile(cpuProfilingFile)
-	} else {
-		flags |= logger.Ltime
 	}
-	log.SetFlags(flags)
+
 	if *nolog {
-		log.SetOutput(ioutil.Discard)
+		logrus.SetOutput(ioutil.Discard)
 	} else if *logfile != "" {
 		f, e := os.OpenFile(*logfile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0600)
 		if e != nil {
-			log.Fatal(e)
+			logrus.Fatal(e)
 		}
-		log.SetOutput(f)
+		logrus.SetOutput(f)
 	}
 	if *daemon {
 		args := []string{}
@@ -92,7 +97,7 @@ func initConfig() (err error) {
 		if *forever {
 			f = "forever "
 		}
-		log.Printf("%s%s [PID] %d running...\n", f, os.Args[0], cmd.Process.Pid)
+		logrus.Printf("%s%s [PID] %d running...\n", f, os.Args[0], cmd.Process.Pid)
 		os.Exit(0)
 	}
 	if *forever {
@@ -116,12 +121,12 @@ func initConfig() (err error) {
 				cmd = exec.Command(os.Args[0], args...)
 				cmdReaderStderr, err := cmd.StderrPipe()
 				if err != nil {
-					log.Printf("ERR:%s,restarting...\n", err)
+					logrus.Printf("ERR: %s, restarting...\n", err)
 					continue
 				}
 				cmdReader, err := cmd.StdoutPipe()
 				if err != nil {
-					log.Printf("ERR:%s,restarting...\n", err)
+					logrus.Printf("ERR: %s, restarting...\n", err)
 					continue
 				}
 				scanner := bufio.NewScanner(cmdReader)
@@ -147,40 +152,40 @@ func initConfig() (err error) {
 					}
 				}()
 				if err := cmd.Start(); err != nil {
-					log.Printf("ERR:%s,restarting...\n", err)
+					logrus.Printf("ERR: %s, restarting...\n", err)
 					continue
 				}
 				pid := cmd.Process.Pid
-				log.Printf("worker %s [PID] %d running...\n", os.Args[0], pid)
+				logrus.Printf("worker %s [PID] %d running...\n", os.Args[0], pid)
 				if err := cmd.Wait(); err != nil {
-					log.Printf("ERR:%s,restarting...", err)
+					logrus.Printf("ERR: %s, restarting...", err)
 					continue
 				}
-				log.Printf("worker %s [PID] %d unexpected exited, restarting...\n", os.Args[0], pid)
+				logrus.Printf("worker %s [PID] %d unexpected exited, restarting...\n", os.Args[0], pid)
 			}
 		}()
 		return
 	}
 	if *logfile == "" {
 		if *isDebug {
-			log.Println("[profiling] cpu profiling save to file : cpu.prof")
-			log.Println("[profiling] memory profiling save to file : memory.prof")
-			log.Println("[profiling] block profiling save to file : block.prof")
-			log.Println("[profiling] goroutine profiling save to file : goroutine.prof")
-			log.Println("[profiling] threadcreate profiling save to file : threadcreate.prof")
+			logrus.Println("[profiling] cpu profiling save to file : cpu.prof")
+			logrus.Println("[profiling] memory profiling save to file : memory.prof")
+			logrus.Println("[profiling] block profiling save to file : block.prof")
+			logrus.Println("[profiling] goroutine profiling save to file : goroutine.prof")
+			logrus.Println("[profiling] threadcreate profiling save to file : threadcreate.prof")
 		}
 	}
 
 	switch serviceName {
 	case "basic":
-		services.Regist(serviceName, basic.NewBasic(), basicArgs, log)
+		services.Regist(serviceName, basic.NewBasic(), basicArgs, logrus.StandardLogger())
 	case "eavesdropper":
-		services.Regist(serviceName, eavesdropper.NewEavesdropper(), eavesdropperArgs, log)
+		services.Regist(serviceName, eavesdropper.NewEavesdropper(), eavesdropperArgs, logrus.StandardLogger())
 	}
 
 	service, err = services.Run(serviceName, nil)
 	if err != nil {
-		log.Fatalf("run service [%s] fail, ERR:%s", serviceName, err)
+		logrus.Fatalf("run service [%s] fail, ERR:%s", serviceName, err)
 	}
 	return
 }
