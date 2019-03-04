@@ -1,18 +1,18 @@
-[![Go Report Card](https://goreportcard.com/badge/gojp/goreportcard)](https://goreportcard.com/report/github.com/moooofly/goproxy) [![Build Status](https://travis-ci.org/moooofly/goproxy.svg?branch=master)](https://travis-ci.org/moooofly/goproxy) [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/moooofly/goproxy/blob/master/LICENSE)
+[![Go Report Card](https://goreportcard.com/badge/gojp/goreportcard)](https://goreportcard.com/report/github.com/moooofly/tunnel-proxy) [![Build Status](https://travis-ci.org/moooofly/tunnel-proxy.svg?branch=master)](https://travis-ci.org/moooofly/tunnel-proxy) [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/moooofly/tunnel-proxy/blob/master/LICENSE)
 
-# goproxy
+# tunnel-proxy
 
 ```
- _______  _______  _______  ______    _______  __   __  __   __
- |       ||       ||       ||    _ |  |       ||  |_|  ||  | |  |
- |    ___||   _   ||    _  ||   | ||  |   _   ||       ||  |_|  |
- |   | __ |  | |  ||   |_| ||   |_||_ |  | |  ||       ||       |
- |   ||  ||  |_|  ||    ___||    __  ||  |_|  | |     | |_     _|
- |   |_| ||       ||   |    |   |  | ||       ||   _   |  |   |
- |_______||_______||___|    |___|  |_||_______||__| |__|  |___|
+ ______  __ __  ____   ____     ___  _             ____  ____   ___   __ __  __ __
+|      ||  |  ||    \ |    \   /  _]| |           |    \|    \ /   \ |  |  ||  |  |
+|      ||  |  ||  _  ||  _  | /  [_ | |     _____ |  o  )  D  )     ||  |  ||  |  |
+|_|  |_||  |  ||  |  ||  |  ||    _]| |___ |     ||   _/|    /|  O  ||_   _||  ~  |
+  |  |  |  :  ||  |  ||  |  ||   [_ |     ||_____||  |  |    \|     ||     ||___, |
+  |  |  |     ||  |  ||  |  ||     ||     |       |  |  |  .  \     ||  |  ||     |
+  |__|   \__,_||__|__||__|__||_____||_____|       |__|  |__|\_|\___/ |__|__||____/
 ```
 
-This a simple **HTTP Tunnel Proxy** based on https://github.com/elazarl/goproxy .
+This a simple **HTTP Tunnel Proxy** based on https://github.com/moooofly/goproxy (which is based on https://github.com/elazarl/goproxy) .
 
 
 ## Installation
@@ -20,14 +20,14 @@ This a simple **HTTP Tunnel Proxy** based on https://github.com/elazarl/goproxy 
 Assuming you already have a recent version of Go installed, pull down the code with go get:
 
 ```
-go get -u github.com/moooofly/goproxy
+go get -u github.com/moooofly/tunnel-proxy
 ```
 
-You can also obtain the pre-compiled binary files from [here](https://github.com/moooofly/goproxy/releases), which is recommanded.
+You can also obtain the pre-compiled binary files from [here](https://github.com/moooofly/tunnel-proxy/releases), which is recommanded.
 
 ## Documentation
 
-See [docs](https://github.com/moooofly/goproxy/tree/master/docs)
+See [docs](https://github.com/moooofly/tunnel-proxy/tree/master/docs)
 
 ## Credits
 
@@ -36,4 +36,4 @@ See [docs](https://github.com/moooofly/goproxy/tree/master/docs)
 
 ## License
 
-goproxy is licensed under the MIT License. See [LICENSE](https://github.com/moooofly/goproxy/blob/master/LICENSE) for the full license text.
+tunnel-proxy is licensed under the MIT License. See [LICENSE](https://github.com/moooofly/tunnel-proxy/blob/master/LICENSE) for the full license text.
