@@ -2,12 +2,14 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"runtime/debug"
 	"runtime/pprof"
+	"strings"
 	"time"
 
 	"github.com/moooofly/tunnel-proxy/services"
@@ -27,15 +29,38 @@ var (
 	isDebug *bool
 )
 
+type customLogFormat struct {
+	logrus.JSONFormatter
+}
+
+func (f *customLogFormat) Format(entry *logrus.Entry) ([]byte, error) {
+	json_out, err := f.JSONFormatter.Format(entry)
+	if err != nil {
+		return nil, err
+	}
+
+	b := &bytes.Buffer{}
+	b.WriteByte('[')
+	b.WriteString(strings.TrimRight(string(json_out), "\n"))
+	b.WriteByte(']')
+	b.WriteByte('\n')
+
+	return b.Bytes(), nil
+}
+
 func initConfig() (err error) {
 
-	logrus.SetFormatter(&logrus.JSONFormatter{
-		FieldMap: logrus.FieldMap{
-			logrus.FieldKeyTime:  "_timestamp",
-			logrus.FieldKeyLevel: "_level",
-			logrus.FieldKeyMsg:   "message",
+	formatter := customLogFormat{
+		logrus.JSONFormatter{
+			FieldMap: logrus.FieldMap{
+				logrus.FieldKeyTime:  "_timestamp",
+				logrus.FieldKeyLevel: "_level",
+				logrus.FieldKeyMsg:   "message",
+			},
 		},
-	})
+	}
+	logrus.SetFormatter(&formatter)
+
 	logrus.SetOutput(os.Stdout)
 	logrus.SetLevel(logrus.InfoLevel)
 
