@@ -50,16 +50,26 @@ func (f *customLogFormat) Format(entry *logrus.Entry) ([]byte, error) {
 
 func initConfig() (err error) {
 
-	formatter := customLogFormat{
-		logrus.JSONFormatter{
-			FieldMap: logrus.FieldMap{
-				logrus.FieldKeyTime:  "_timestamp",
-				logrus.FieldKeyLevel: "_level",
-				logrus.FieldKeyMsg:   "message",
+	/*
+		formatter := customLogFormat{
+			logrus.JSONFormatter{
+				FieldMap: logrus.FieldMap{
+					logrus.FieldKeyTime:  "_timestamp",
+					logrus.FieldKeyLevel: "_level",
+					logrus.FieldKeyMsg:   "message",
+				},
 			},
+		}
+		logrus.SetFormatter(&formatter)
+	*/
+
+	logrus.SetFormatter(&logrus.JSONFormatter{
+		FieldMap: logrus.FieldMap{
+			logrus.FieldKeyTime:  "_timestamp",
+			logrus.FieldKeyLevel: "_level",
+			logrus.FieldKeyMsg:   "message",
 		},
-	}
-	logrus.SetFormatter(&formatter)
+	})
 
 	logrus.SetOutput(os.Stdout)
 	logrus.SetLevel(logrus.InfoLevel)
