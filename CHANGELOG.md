@@ -1,3 +1,16 @@
+<a name="0.6.0"></a>
+# [0.6.0](https://github.com/moooofly/tunnel-proxy/compare/v0.5.0...v0.6.0) (2019-04-03)
+
+
+### Features
+
+* extract client ip from multiple HTTP headers ([e7ef682](https://github.com/moooofly/tunnel-proxy/commit/e7ef682))
+* update log output format again fallback to json object ([3cc24f5](https://github.com/moooofly/tunnel-proxy/commit/3cc24f5))
+* update log output format for td-agent ([faeaa71](https://github.com/moooofly/tunnel-proxy/commit/faeaa71))
+* update service default port from 8080 to 80 ([ada676e](https://github.com/moooofly/tunnel-proxy/commit/ada676e))
+
+
+
 <a name="0.5.0"></a>
 # [0.5.0](https://github.com/moooofly/tunnel-proxy/compare/v0.4.0...v0.5.0) (2019-03-05)
 
