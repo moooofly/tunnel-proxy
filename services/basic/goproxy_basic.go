@@ -93,6 +93,13 @@ func (s *Basic) Start(args interface{}, log *logrus.Logger) (err error) {
 			// header analysis
 			proxy.OnRequest().HandleConnect(s.HeaderAnalysis())
 
+			// NOTE: This setting has only effects on HTTP
+			proxy.OnRequest().DoFunc(
+				func(r *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
+					r.Header.Set("X-Forwarded-For", getClientIP(r))
+					return r, nil
+				})
+
 			// basic auth
 			proxy.OnRequest().Do(auth.Basic(realm, s.Verify))
 			proxy.OnRequest().HandleConnect(auth.BasicConnect(realm, s.Verify))
@@ -106,16 +113,32 @@ func (s *Basic) Start(args interface{}, log *logrus.Logger) (err error) {
 	return
 }
 
+func getClientIP(r *http.Request) string {
+	ip := r.Header.Get("X-Real-IP")
+	if ip == "" {
+		ip = r.Header.Get("X-Forwarded-For")
+		if ip == "" {
+			ip = strings.Split(r.RemoteAddr, ":")[0]
+		} else {
+			ip = strings.Split(ip, ",")[0]
+		}
+	}
+	return ip
+}
+
 // TODO: Log into file for later analysis
 func (s *Basic) HeaderAnalysis() goproxy.HttpsHandler {
 	return goproxy.FuncHttpsHandler(func(host string, ctx *goproxy.ProxyCtx) (*goproxy.ConnectAction, string) {
 		ua := ctx.Req.Header.Get("User-Agent")
-		s.log.Printf("User-Agent: %s\n", ua)
+		clientIP := getClientIP(ctx.Req)
+		s.log.Printf("User-Agent: %s   remoteAddr: %s", ua, clientIP)
+
+		// NOTE: This setting has no effect in current proxy mode
+		//ctx.Req.Header.Set("X-Forwarded-For", clientIP)
+		//s.log.Printf("X-Forwarded-For (after set): %s", ctx.Req.Header.Get("X-Forwarded-For"))
 
 		// The format of User-Info is base64(Aes256(userId+login))
 		ui := ctx.Req.Header.Get("User-Info")
-		s.log.Printf("User-Info: %s\n", ui)
-
 		if ui == "" {
 			//s.log.Println("Find no 'User-Info' header, Reject!")
 			//return goproxy.RejectConnect, host
@@ -127,7 +150,7 @@ func (s *Basic) HeaderAnalysis() goproxy.HttpsHandler {
 		if err != nil {
 			return goproxy.RejectConnect, host
 		}
-		s.log.Printf("IDs: %s\n", string(IDs))
+		s.log.Printf("userID,loginID: %s", string(IDs))
 
 		return nil, host
 	})
@@ -157,6 +180,6 @@ func (s *Basic) InitBasicAuth() (err error) {
 }
 
 func (s *Basic) Verify(user, passwd string) bool {
-	s.log.Printf("user:%s  pass:%s\n", user, passwd)
+	//s.log.Printf("user:%s  pass:%s\n", user, passwd)
 	return s.basicAuth.Check(user, passwd)
 }
