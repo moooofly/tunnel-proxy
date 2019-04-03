@@ -2,12 +2,14 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"runtime/debug"
 	"runtime/pprof"
+	"strings"
 	"time"
 
 	"github.com/moooofly/tunnel-proxy/services"
@@ -27,7 +29,39 @@ var (
 	isDebug *bool
 )
 
+type customLogFormat struct {
+	logrus.JSONFormatter
+}
+
+func (f *customLogFormat) Format(entry *logrus.Entry) ([]byte, error) {
+	json_out, err := f.JSONFormatter.Format(entry)
+	if err != nil {
+		return nil, err
+	}
+
+	b := &bytes.Buffer{}
+	b.WriteByte('[')
+	b.WriteString(strings.TrimRight(string(json_out), "\n"))
+	b.WriteByte(']')
+	b.WriteByte('\n')
+
+	return b.Bytes(), nil
+}
+
 func initConfig() (err error) {
+
+	/*
+		formatter := customLogFormat{
+			logrus.JSONFormatter{
+				FieldMap: logrus.FieldMap{
+					logrus.FieldKeyTime:  "_timestamp",
+					logrus.FieldKeyLevel: "_level",
+					logrus.FieldKeyMsg:   "message",
+				},
+			},
+		}
+		logrus.SetFormatter(&formatter)
+	*/
 
 	logrus.SetFormatter(&logrus.JSONFormatter{
 		FieldMap: logrus.FieldMap{
@@ -36,6 +70,7 @@ func initConfig() (err error) {
 			logrus.FieldKeyMsg:   "message",
 		},
 	})
+
 	logrus.SetOutput(os.Stdout)
 	logrus.SetLevel(logrus.InfoLevel)
 
@@ -52,14 +87,14 @@ func initConfig() (err error) {
 
 	// ######### basic ##########
 	basicCmd := app.Command("basic", "basic proxy")
-	basicArgs.Local = basicCmd.Flag("local", "Address to listen, multiple addresses separating by comma, e.g. \"0.0.0.0:80,0.0.0.0:443\"").Short('l').Default(":8080").String()
+	basicArgs.Local = basicCmd.Flag("local", "Address to listen, multiple addresses separating by comma, e.g. \"0.0.0.0:80,0.0.0.0:443\"").Short('l').Default(":80").String()
 	basicArgs.White = basicCmd.Flag("white", "white-list file, please set one domain each line").Default("whitelist.cfg").Short('w').String()
 	basicArgs.AuthFile = basicCmd.Flag("auth-file", "HTTP basic auth file, please set one \"username:password\" each line").Short('A').String()
 	basicArgs.Auth = basicCmd.Flag("auth-args", "HTTP basic auth arguments, can set mutiple times, e.g. \"-a user1:pass1 -a user2:pass2\"").Short('a').Strings()
 
 	// ######### eavesdropper ##########
 	eavesdropperCmd := app.Command("eavesdropper", "eavesdropper proxy")
-	eavesdropperArgs.Local = eavesdropperCmd.Flag("local", "local ip:port to listen, multiple address use comma split, such as: 0.0.0.0:80,0.0.0.0:443").Short('p').Default(":8080").String()
+	eavesdropperArgs.Local = eavesdropperCmd.Flag("local", "local ip:port to listen, multiple address use comma split, such as: 0.0.0.0:80,0.0.0.0:443").Short('p').Default(":80").String()
 	eavesdropperArgs.White = eavesdropperCmd.Flag("white", "white-list file, please set one domain each line").Default("whitelist.cfg").Short('w').String()
 	eavesdropperArgs.AuthFile = eavesdropperCmd.Flag("auth-file", "HTTP basic auth file, please set one \"username:password\" each line").Short('A').String()
 	eavesdropperArgs.Auth = eavesdropperCmd.Flag("auth-args", "HTTP basic auth arguments, can set mutiple times, e.g. \"-a user1:pass1 -a user2:pass2\"").Short('a').Strings()
