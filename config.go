@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"runtime/debug"
 	"runtime/pprof"
 	"strings"
@@ -77,8 +78,9 @@ func initConfig() (err error) {
 	basicArgs := basic.BasicArgs{}
 	eavesdropperArgs := eavesdropper.EavesdropperArgs{}
 
-	app = kingpin.New("proxy", "This is a HTTP Tunnel Proxy.")
+	app = kingpin.New("proxy", "This is a HTTP/HTTPS Proxy.")
 	app.Author("moooofly").Version(APP_VERSION)
+
 	isDebug = app.Flag("debug", "debug log output").Default("false").Bool()
 	daemon := app.Flag("daemon", "run proxy in background").Default("false").Bool()
 	forever := app.Flag("forever", "run proxy in forever, fail and retry").Default("false").Bool()
@@ -87,17 +89,21 @@ func initConfig() (err error) {
 
 	// ######### basic ##########
 	basicCmd := app.Command("basic", "basic proxy")
-	basicArgs.Local = basicCmd.Flag("local", "Address to listen, multiple addresses separating by comma, e.g. \"0.0.0.0:80,0.0.0.0:443\"").Short('l').Default(":80").String()
+	basicArgs.Local = basicCmd.Flag("listen", "Address to listen, multiple addresses separated by comma, e.g. \"0.0.0.0:80,0.0.0.0:443\"").Short('l').Default(":80").String()
 	basicArgs.White = basicCmd.Flag("white", "white-list file, please set one domain each line").Default("whitelist.cfg").Short('w').String()
 	basicArgs.AuthFile = basicCmd.Flag("auth-file", "HTTP basic auth file, please set one \"username:password\" each line").Short('A').String()
 	basicArgs.Auth = basicCmd.Flag("auth-args", "HTTP basic auth arguments, can set mutiple times, e.g. \"-a user1:pass1 -a user2:pass2\"").Short('a').Strings()
 
 	// ######### eavesdropper ##########
 	eavesdropperCmd := app.Command("eavesdropper", "eavesdropper proxy")
-	eavesdropperArgs.Local = eavesdropperCmd.Flag("local", "local ip:port to listen, multiple address use comma split, such as: 0.0.0.0:80,0.0.0.0:443").Short('p').Default(":80").String()
+	eavesdropperArgs.Local = eavesdropperCmd.Flag("listen", "Address to listen, multiple addresses separated by comma, e.g. \"0.0.0.0:80,0.0.0.0:443\"").Short('l').Default(":80").String()
 	eavesdropperArgs.White = eavesdropperCmd.Flag("white", "white-list file, please set one domain each line").Default("whitelist.cfg").Short('w').String()
 	eavesdropperArgs.AuthFile = eavesdropperCmd.Flag("auth-file", "HTTP basic auth file, please set one \"username:password\" each line").Short('A').String()
 	eavesdropperArgs.Auth = eavesdropperCmd.Flag("auth-args", "HTTP basic auth arguments, can set mutiple times, e.g. \"-a user1:pass1 -a user2:pass2\"").Short('a').Strings()
+
+	eavesdropperArgs.CaPath = eavesdropperCmd.Flag("capath", "the certificate directory to find certs").Short('p').Default("./certs").String()
+	eavesdropperArgs.CaCert = eavesdropperCmd.Flag("cacert", "the certificate file to use").Short('c').String()
+	eavesdropperArgs.CaKey = eavesdropperCmd.Flag("cakey", "the certificate private key file to use").Short('k').String()
 
 	serviceName := kingpin.MustParse(app.Parse(os.Args[1:]))
 
@@ -216,6 +222,23 @@ func initConfig() (err error) {
 		services.Regist(serviceName, basic.NewBasic(), basicArgs, logrus.StandardLogger())
 	case "eavesdropper":
 		services.Regist(serviceName, eavesdropper.NewEavesdropper(), eavesdropperArgs, logrus.StandardLogger())
+	}
+
+	cwd, err := filepath.Abs(*eavesdropperArgs.CaPath)
+	if err != nil {
+		return err
+	}
+
+	if *eavesdropperArgs.CaCert == "" || *eavesdropperArgs.CaKey == "" {
+		logrus.Println("Find no cert and key files setting, use defaults instead.")
+	} else {
+		caCert, err1 := ioutil.ReadFile(filepath.Join(cwd, *eavesdropperArgs.CaCert))
+		caKey, err2 := ioutil.ReadFile(filepath.Join(cwd, *eavesdropperArgs.CaKey))
+		if err1 != nil || err2 != nil {
+			logrus.Printf("Find invalid cert or key file, use defauts instead.")
+		} else {
+			setCustomCA(caCert, caKey)
+		}
 	}
 
 	service, err = services.Run(serviceName, nil)

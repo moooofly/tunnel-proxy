@@ -26,6 +26,9 @@ type EavesdropperArgs struct {
 	White    *string
 	AuthFile *string
 	Auth     *[]string
+	CaPath   *string
+	CaCert   *string
+	CaKey    *string
 }
 
 type Eavesdropper struct {
