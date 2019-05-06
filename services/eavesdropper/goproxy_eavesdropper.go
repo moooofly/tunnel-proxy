@@ -140,14 +140,13 @@ func (s *Eavesdropper) HeaderAnalysis() goproxy.HttpsHandler {
 	return goproxy.FuncHttpsHandler(func(host string, ctx *goproxy.ProxyCtx) (*goproxy.ConnectAction, string) {
 		ua := ctx.Req.Header.Get("User-Agent")
 		clientIP := getClientIP(ctx.Req)
-		s.log.Printf("User-Agent: %s   remoteAddr: %s", ua, clientIP)
 
 		// The format of User-Info is base64(Aes256(userId+login))
 		ui := ctx.Req.Header.Get("User-Info")
 		if ui == "" {
 			//s.log.Println("Find no 'User-Info' header, Reject!")
 			//return goproxy.RejectConnect, host
-			s.log.Println("Find no 'User-Info' header, do nothing in this version!")
+			s.log.Println("Find no 'User-Info' header, do nothing in this version! (User-Agent:%s  remoteAddr:%s)", ua, clientIP)
 			return nil, host
 		}
 
@@ -155,7 +154,8 @@ func (s *Eavesdropper) HeaderAnalysis() goproxy.HttpsHandler {
 		if err != nil {
 			return goproxy.RejectConnect, host
 		}
-		s.log.Printf("userID,loginID: %s", string(IDs))
+		ids := strings.Split(string(IDs), ",")
+		s.log.Printf("User-Agent:%s  remoteAddr:%s  userID:%s  loginID:%s", ua, clientIP, ids[0], ids[1])
 
 		return nil, host
 	})
